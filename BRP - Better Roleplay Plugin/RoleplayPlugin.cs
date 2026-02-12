@@ -13,10 +13,10 @@ namespace UnifiedSCPPlugin
     {
         public static RoleplayPlugin Instance { get; private set; }
 
-        public override string Name => "UnifiedSCPPlugin";
+        public override string Name => "BRP - Better Roleplay Plugin";
         public override string Author => "Konoara";
-        public override string Prefix => "unified_scp";
-        public override System.Version Version => new(1, 1, 0);
+        public override string Prefix => "BRP - Better Roleplay Plugin";
+        public override System.Version Version => new(1, 0, 0);
         public override System.Version RequiredExiledVersion => new(9, 6, 0);
 
         public override void OnEnabled()
@@ -107,4 +107,5 @@ namespace UnifiedSCPPlugin
 
         }
     }
+
 }
