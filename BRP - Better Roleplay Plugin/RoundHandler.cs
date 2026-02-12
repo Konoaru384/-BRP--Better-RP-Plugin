@@ -1,4 +1,4 @@
-﻿using Cassie;
+using Cassie;
 using Exiled.API.Enums;
 using Exiled.API.Features;
 using Exiled.API.Features.Doors;
@@ -16,83 +16,96 @@ namespace UnifiedSCPPlugin
     {
         private static readonly System.Random rng = new();
 
+        private static RoundStartSettings Cfg => RoleplayPlugin.Instance.Config.RoundStart;
+
         public static void OnRoundStarted()
         {
-            Log.Info("[DEBUG-ROUND] OnRoundStarted déclenché");
+            Log.Info("[ROUND] OnRoundStarted triggered");
 
-            if (!RoleplayPlugin.Instance.Config.ScpRoomEntry.Enable)
+            if (!Cfg.Enable)
             {
-                Log.Warn("[DEBUG-ROUND] Config désactivée, sortie de OnRoundStarted");
+                Log.Warn("[ROUND] Disabled in config");
                 return;
             }
 
-            bool isHRP = Player.List.Count < 7;
-            Log.Info($"[DEBUG-ROUND] Nombre de joueurs: {Player.List.Count}, HRP: {isHRP}");
+            bool isHRP = Player.List.Count < Cfg.MinPlayersForRP;
+            Log.Info($"[ROUND] Players: {Player.List.Count}, HRP: {isHRP}");
 
             Timing.CallDelayed(2f, () =>
             {
-                Log.Info("[DEBUG-ROUND] CallDelayed exécuté");
-
                 bool specialEventTriggered = false;
 
                 if (isHRP)
                 {
-                    Log.Warn("[DEBUG-ROUND] Mode HRP activé");
-                    Map.Broadcast(9999, "<color=red><b>❗ Partie en HRP — attention les cellules de class D se sont donc ouvertes... !</b></color>");
+                    Log.Warn("[ROUND] HRP mode active");
 
-                    foreach (var door in Door.List.Where(d => d.Room?.Type == RoomType.LczClassDSpawn))
-                        door.IsOpen = true;
+                    Map.Broadcast(Cfg.HrpBroadcastDuration, Cfg.HrpBroadcast);
 
-                    if (rng.NextDouble() <= 0.10)
+                    if (Cfg.AutoOpenClassDCells)
                     {
-                        Log.Info("[DEBUG-ROUND] Événement spécial déclenché (HRP)");
+                        foreach (var door in Door.List.Where(d => d.Room?.Type == RoomType.LczClassDSpawn))
+                            door.IsOpen = true;
+                    }
+
+                    if (rng.NextDouble() <= Cfg.SpecialEventChance)
+                    {
                         specialEventTriggered = true;
                         TriggerSpecialEvent();
                     }
 
                     if (!specialEventTriggered)
                     {
-                        Log.Info("[DEBUG-ROUND] Cassie OGGSTART1 dans 5 secondes (HRP)");
-                        Timing.CallDelayed(15f, () =>
+                        Timing.CallDelayed(Cfg.InitialCassieDelay, () =>
                         {
-                            LabApi.Features.Wrappers.Cassie.Message(new CassieTtsPayload(customAnnouncement: "CUSTOMCASSIE OGGSTART1", autoGenerateSubtitles: false, playBackground: false), glitchScale: 0);
-                            Log.Info("[DEBUG-ROUND] Cassie OGGSTART1 lancé (HRP)");
+                            LabApi.Features.Wrappers.Cassie.Message(
+                                new CassieTtsPayload(
+                                    customAnnouncement: Cfg.CassieStartHRP,
+                                    autoGenerateSubtitles: false,
+                                    playBackground: false),
+                                glitchScale: 0);
                         });
                     }
 
                     SharedState.RoomCheckCoroutine = Timing.RunCoroutine(PlayerHandler.CheckRoomChanges());
-                    SharedState.HrpCoroutine = Timing.RunCoroutine(WaitForRPBroadcastTransition());
+
+                    if (Cfg.EnableRPTransition)
+                        SharedState.HrpCoroutine = Timing.RunCoroutine(WaitForRPBroadcastTransition());
                 }
                 else
                 {
-                    Log.Info("[DEBUG-ROUND] Mode RP normal");
+                    Log.Info("[ROUND] Normal RP mode");
 
-                    if (rng.NextDouble() <= 0.10)
+                    if (rng.NextDouble() <= Cfg.SpecialEventChance)
                     {
-                        Log.Info("[DEBUG-ROUND] Événement spécial déclenché (RP)");
                         specialEventTriggered = true;
                         TriggerSpecialEvent();
                     }
 
                     if (!specialEventTriggered)
                     {
-                        Log.Info("[DEBUG-ROUND] Cassie OGGSTART1 dans 5 secondes (RP)");
-                        Timing.CallDelayed(15f, () =>
+                        Timing.CallDelayed(Cfg.InitialCassieDelay, () =>
                         {
-                            LabApi.Features.Wrappers.Cassie.Message(new CassieTtsPayload(customAnnouncement: "CUSTOMCASSIE OGGSTART1", autoGenerateSubtitles: false, playBackground: false), glitchScale: 0);
-                            Log.Info("[DEBUG-ROUND] Cassie OGGSTART1 lancé (RP)");
+                            LabApi.Features.Wrappers.Cassie.Message(
+                                new CassieTtsPayload(
+                                    customAnnouncement: Cfg.CassieStartRP,
+                                    autoGenerateSubtitles: false,
+                                    playBackground: false),
+                                glitchScale: 0);
                         });
                     }
                 }
             });
 
-            foreach (Window w in Window.Get(x => x.Type == GlassType.Plants))
-                w.BreakWindow();
+            if (Cfg.BreakPlantWindows)
+            {
+                foreach (Window w in Window.Get(x => x.Type == GlassType.Plants))
+                    w.BreakWindow();
+            }
         }
 
         private static void TriggerSpecialEvent()
         {
-            Log.Info("[DEBUG-ROUND] TriggerSpecialEvent appelé");
+            Log.Info("[ROUND] Special event triggered");
 
             foreach (var door in Door.List.Where(d => d.Room?.Type == RoomType.LczClassDSpawn))
                 door.IsOpen = true;
@@ -100,22 +113,20 @@ namespace UnifiedSCPPlugin
             Timing.CallDelayed(2f, () =>
             {
                 var classDPlayers = Player.List.Where(p => p.Role.Type == RoleTypeId.ClassD).ToList();
-                Log.Info($"[DEBUG-ROUND] Nombre de ClassD: {classDPlayers.Count}");
 
                 if (classDPlayers.Count > 0)
                 {
                     var chosen = classDPlayers[rng.Next(classDPlayers.Count)];
                     chosen.AddItem(ItemType.GunCOM18);
-                    Log.Warn($"[DEBUG-ROUND] {chosen.Nickname} a reçu un COM18");
 
                     bool atLeastOneCard = false;
+
                     foreach (var cd in classDPlayers)
                     {
-                        if (rng.NextDouble() <= 0.45)
+                        if (rng.NextDouble() <= Cfg.ClassDKeycardChance)
                         {
                             cd.AddItem(ItemType.KeycardGuard);
                             atLeastOneCard = true;
-                            Log.Info($"[DEBUG-ROUND] {cd.Nickname} a reçu une Keycard Guard");
                         }
                     }
 
@@ -123,38 +134,36 @@ namespace UnifiedSCPPlugin
                     {
                         var forced = classDPlayers[rng.Next(classDPlayers.Count)];
                         forced.AddItem(ItemType.KeycardGuard);
-                        Log.Warn($"[DEBUG-ROUND] {forced.Nickname} a reçu une Keycard Guard forcée");
                     }
 
-                    Log.Info("[DEBUG-ROUND] Cassie OGGSTART2 dans 5 secondes");
-                    Timing.CallDelayed(15f, () =>
+                    Timing.CallDelayed(Cfg.InitialCassieDelay, () =>
                     {
-                        LabApi.Features.Wrappers.Cassie.Message(new CassieTtsPayload(customAnnouncement: "CUSTOMCASSIE OGGSTART2", autoGenerateSubtitles: false, playBackground: false), glitchScale: 0);
-                        Log.Info("[DEBUG-ROUND] Cassie OGGSTART2 lancé");
+                        LabApi.Features.Wrappers.Cassie.Message(
+                            new CassieTtsPayload(
+                                customAnnouncement: Cfg.CassieSpecialEvent,
+                                autoGenerateSubtitles: false,
+                                playBackground: false),
+                            glitchScale: 0);
                     });
-                }
-                else
-                {
-                    Log.Warn("[DEBUG-ROUND] Aucun ClassD trouvé pour l’événement spécial");
                 }
             });
         }
 
         private static IEnumerator<float> WaitForRPBroadcastTransition()
         {
-            Log.Info("[DEBUG-ROUND] Coroutine WaitForRPBroadcastTransition démarrée");
-
             while (!SharedState.RpAnnounced)
             {
-                if (Player.List.Count >= 7)
+                if (Player.List.Count >= Cfg.MinPlayersForRP)
                 {
                     SharedState.RpAnnounced = true;
                     Map.ClearBroadcasts();
-                    Log.Info("[DEBUG-ROUND] Transition vers RP détectée");
-                    yield return Timing.WaitForSeconds(5f);
-                    Map.Broadcast(5, "<color=red><b>💬 La partie devient RP</b></color>");
+
+                    yield return Timing.WaitForSeconds(Cfg.RpTransitionDelay);
+
+                    Map.Broadcast(5, Cfg.RpTransitionBroadcast);
                     yield break;
                 }
+
                 yield return Timing.WaitForSeconds(5f);
             }
         }
