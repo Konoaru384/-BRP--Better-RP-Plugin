@@ -16,13 +16,13 @@ Better Roleplay Plugin is a simple EXILED plugin designed to make running a role
 ## **Features**
 
 1. **SCP‑173 Door Destruction**  
-   Allows you to destroy the SCP‑173 containment door. You can also replace it with another door.
+   Allows you to destroy the SCP‑173 containment door. You can also replace it with another door (by using PMER).
 
 2. **Blackout Hack Command**  
    A fully configurable command that turns off all facility lights, with options to automatically re‑enable them.
 
 3. **Checkpoint Hack Command**  
-   Lets players hack checkpoints. (More updates coming soon.)
+   Lets players hack checkpoints.
 
 4. **Class‑D Door Restriction System**  
    The Class‑D door opens only if there are not enough players on the server (configurable).  
@@ -65,6 +65,10 @@ Better Roleplay Plugin is a simple EXILED plugin designed to make running a role
 
 16. **SCP‑3114 Flashblind Mechanic**  
    If SCP‑3114 is flashed with a flashlight, it becomes unable to see.
+
+17. **Custom RP Spawn Position**
+    Guard, Scientist etc have a custom spawn position...
+
 
 
 <p align="center">
