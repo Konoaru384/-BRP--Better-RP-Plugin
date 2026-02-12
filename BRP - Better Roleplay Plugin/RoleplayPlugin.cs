@@ -1,4 +1,4 @@
-﻿using Exiled.API.Features;
+using Exiled.API.Features;
 using GameCore;
 using GateSummonSCP;
 using System;
@@ -16,7 +16,7 @@ namespace UnifiedSCPPlugin
         public override string Name => "BRP - Better Roleplay Plugin";
         public override string Author => "Konoara";
         public override string Prefix => "BRP - Better Roleplay Plugin";
-        public override System.Version Version => new(1, 0, 0);
+        public override System.Version Version => new(1, 1, 0);
         public override System.Version RequiredExiledVersion => new(9, 6, 0);
 
         public override void OnEnabled()
@@ -24,6 +24,7 @@ namespace UnifiedSCPPlugin
             Instance = this;
 
             PlayerEvents.InteractingDoor += DoorHandler.OnInteractingDoor;
+            CustomSpawnHandler.Register();
             PlayerEvents.Spawned += PlayerHandler.OnSpawned;
             PlayerEvents.ChangingRole += PlayerHandler.OnChangingRole;
             PlayerEvents.Died += PlayerHandler.OnDied;
@@ -47,19 +48,23 @@ namespace UnifiedSCPPlugin
             SpeedBadgePlugin.Register();
             Exiled.Events.Handlers.Server.RoundStarted += OnRoundStarted;
             Exiled.Events.Handlers.Server.WaitingForPlayers += OnWaitingForPlayers;
+            ScpToOverwatchHandler.Register();
+            RpCreditsHandler.Register();
 
 
 
 
 
 
-            Exiled.API.Features.Log.Info("[UnifiedSCPPlugin] Plugin activé");
+
+            Exiled.API.Features.Log.Info("[BRP] Plugin enable");
         }
 
         public override void OnDisabled()
         {
             PlayerEvents.InteractingDoor -= DoorHandler.OnInteractingDoor;
             PlayerEvents.Spawned -= PlayerHandler.OnSpawned;
+            CustomSpawnHandler.Unregister();
             PlayerEvents.ChangingRole -= PlayerHandler.OnChangingRole;
             PlayerEvents.Died -= PlayerHandler.OnDied;
             ServerEvents.RoundStarted -= RoundHandler.OnRoundStarted;
@@ -86,6 +91,8 @@ namespace UnifiedSCPPlugin
             SpeedBadgePlugin.Unregister();
             Exiled.Events.Handlers.Server.RoundStarted -= OnRoundStarted;
             Exiled.Events.Handlers.Server.WaitingForPlayers -= OnWaitingForPlayers;
+            ScpToOverwatchHandler.Unregister();
+            RpCreditsHandler.Unregister();
 
 
 
@@ -93,7 +100,7 @@ namespace UnifiedSCPPlugin
 
             Instance = null;
 
-            Exiled.API.Features.Log.Info("[UnifiedSCPPlugin] Plugin désactivé");
+            Exiled.API.Features.Log.Info("[BRP] Plugin disable");
         }
 
         private void OnWaitingForPlayers()
@@ -107,5 +114,4 @@ namespace UnifiedSCPPlugin
 
         }
     }
-
 }
