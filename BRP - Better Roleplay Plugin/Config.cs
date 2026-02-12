@@ -1,4 +1,4 @@
-﻿using Exiled.API.Enums;
+using Exiled.API.Enums;
 using Exiled.API.Interfaces;
 using PlayerRoles;
 using System.Collections.Generic;
@@ -113,6 +113,34 @@ namespace UnifiedSCPPlugin
 
         [Description("Settings for the infinite respawn token manager.")]
         public InfiniteRespawnSettings InfiniteRespawns { get; set; } = new();
+
+        // ─────────────────────────────────────────────────────────────
+        // CATEGORY: CHECKPOINT HACK COMMAND SYSTEM
+        // ─────────────────────────────────────────────────────────────
+
+        [Description("Settings for the Checkpoint Hack command system.")]
+        public CheckpointHackSettings CheckpointHack { get; set; } = new();
+
+        // ─────────────────────────────────────────────────────────────
+        // CATEGORY: CUSTOM RP SPAWN SETTINGS 
+        // ─────────────────────────────────────────────────────────────
+
+        [Description("Settings for custom spawn positions for specific roles.")]
+        public CustomSpawnSettings CustomSpawns { get; set; } = new();
+
+        // ─────────────────────────────────────────────────────────────
+        // CATEGORY: OVERWATCH EXIT COMMAND
+        // ─────────────────────────────────────────────────────────────
+
+        [Description("Settings for the Overwatch exit command.")]
+        public OverwatchExitSettings OverwatchExit { get; set; } = new();
+
+        // ─────────────────────────────────────────────────────────────
+        // CATEGORY: NO SCP ONLY OVERWATCH
+        // ─────────────────────────────────────────────────────────────
+
+        [Description("Settings for the SCP-to-Overwatch conversion system.")]
+        public ScpToOverwatchSettings ScpToOverwatch { get; set; } = new();
 
 
     }
@@ -676,6 +704,9 @@ namespace UnifiedSCPPlugin
         public float RpTransitionDelay { get; set; } = 5f;
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // 3114 FLASHLIGHT BLINDNESS SYSTEM
+    // ─────────────────────────────────────────────────────────────
     public class Scp3114FlashSettings
     {
         [Description("Enable or disable the SCP-3114 flashlight blindness system.")]
@@ -698,6 +729,9 @@ namespace UnifiedSCPPlugin
         public bool Debug { get; set; } = false;
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // INFINITE RESPAWN TOKEN MANAGER SETTINGS
+    // ─────────────────────────────────────────────────────────────
     public class InfiniteRespawnSettings
     {
         [Description("Enable or disable the infinite respawn token manager.")]
@@ -717,6 +751,159 @@ namespace UnifiedSCPPlugin
 
         [Description("Enable debug logs for token manager.")]
         public bool Debug { get; set; } = false;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // CHECKPOINT HACK COMMAND SYSTEM SETTINGS
+    // ─────────────────────────────────────────────────────────────
+    public class CheckpointHackSettings
+    {
+        [Description("Enable or disable the checkpoint hack system.")]
+        public bool Enable { get; set; } = true;
+
+        [Description("Maximum distance allowed from the hack start position.")]
+        public float MaxDistance { get; set; } = 15f;
+
+        [Description("Minimum height difference required (player must be above 914).")]
+        public float MinHeightDifference { get; set; } = 1.5f;
+
+        [Description("Total duration of the hack in seconds.")]
+        public float HackDuration { get; set; } = 100f;
+
+        [Description("Corruption increase per second when conditions are not met.")]
+        public float CorruptionRate { get; set; } = 5f;
+
+        [Description("Corruption decay per second when conditions are met.")]
+        public float CorruptionDecay { get; set; } = 2f;
+
+        [Description("CASSIE message played when the hack succeeds.")]
+        public string CassieSuccessMessage { get; set; } = "CUSTOMCASSIE checkpoint";
+
+        [Description("Broadcast shown when the hack succeeds.")]
+        public string SuccessBroadcast { get; set; } =
+            "<color=red><b>⚠ CHECKPOINT HACK ACTIVATED !</b></color>\n<color=yellow>All checkpoints are compromised.</color>";
+
+        [Description("Duration of the success broadcast.")]
+        public ushort SuccessBroadcastDuration { get; set; } = 10;
+
+        [Description("Interval between forced checkpoint opening checks.")]
+        public float ForceOpenInterval { get; set; } = 5f;
+
+        [Description("List of checkpoint doors to force open.")]
+        public List<DoorType> CheckpointDoors { get; set; } = new()
+    {
+        DoorType.CheckpointLczA,
+        DoorType.CheckpointLczB,
+        DoorType.CheckpointEzHczA,
+        DoorType.CheckpointEzHczB
+    };
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // CUSTOM SPAWN LOCATION SETTINGS
+    // ─────────────────────────────────────────────────────────────
+
+    public class CustomSpawnSettings
+    {
+        [Description("Enable or disable the custom spawn system.")]
+        public bool Enable { get; set; } = true;
+
+        [Description("Enable custom spawn for Facility Guards.")]
+        public bool GuardSpawn { get; set; } = true;
+
+        [Description("Enable custom spawn for Scientists.")]
+        public bool ScientistSpawn { get; set; } = true;
+
+        [Description("Enable custom spawn for SCP-096.")]
+        public bool Scp096Spawn { get; set; } = true;
+
+        [Description("Enable custom spawn for SCP-3114.")]
+        public bool Scp3114Spawn { get; set; } = true;
+
+        [Description("Enable custom spawn for SCP-173.")]
+        public bool Scp173Spawn { get; set; } = true;
+
+        [Description("Spawn offset applied to all custom spawns.")]
+        public Vector3 GlobalOffset { get; set; } = new Vector3(0, 1, 0);
+
+        [Description("Custom spawnpoints by role.")]
+        public Dictionary<RoleTypeId, RoomType> SpawnRooms { get; set; } = new()
+    {
+        { RoleTypeId.FacilityGuard, RoomType.LczTCross },
+        { RoleTypeId.Scientist, RoomType.LczClassDSpawn },
+        { RoleTypeId.Scp096, RoomType.Hcz096 },
+        { RoleTypeId.Scp3114, RoomType.LczGlassBox },
+        { RoleTypeId.Scp173, RoomType.Lcz173 }
+    };
+
+        [Description("Custom offsets for each role spawnpoint.")]
+        public Dictionary<RoleTypeId, Vector3> SpawnOffsets { get; set; } = new()
+    {
+        { RoleTypeId.FacilityGuard, new Vector3(0, 2, 0) },
+        { RoleTypeId.Scientist, new Vector3(-2, 1, 0) },
+        { RoleTypeId.Scp096, new Vector3(-2, 1, 0) },
+        { RoleTypeId.Scp3114, new Vector3(5, 1, 5) },
+        { RoleTypeId.Scp173, new Vector3(16, 12, 7) }
+    };
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // OVERWATCH EXIT COMMAND SETTINGS
+    // ─────────────────────────────────────────────────────────────
+
+    public class OverwatchExitSettings
+    {
+        [Description("Enable or disable the overwatch exit command.")]
+        public bool Enable { get; set; } = true;
+
+        [Description("Role that players are switched to when exiting overwatch.")]
+        public RoleTypeId ExitRole { get; set; } = RoleTypeId.Spectator;
+
+        [Description("Message shown when the player successfully exits overwatch.")]
+        public string SuccessMessage { get; set; } =
+            "You have exited Overwatch and are now a spectator.";
+
+        [Description("Message shown when the player is not in overwatch.")]
+        public string NotOverwatchMessage { get; set; } =
+            "You are not in Overwatch.";
+
+        [Description("Message shown when the command is disabled.")]
+        public string DisabledMessage { get; set; } =
+            "The Overwatch exit command is disabled.";
+
+        [Description("Message shown when the sender is not a player.")]
+        public string NotPlayerMessage { get; set; } =
+            "This command can only be used by players.";
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // SCP TO OVERWATCH SYSTEM SETTINGS
+    // ─────────────────────────────────────────────────────────────
+
+    public class ScpToOverwatchSettings
+    {
+        [Description("Enable or disable the SCP-to-Overwatch system.")]
+        public bool Enable { get; set; } = true;
+
+        [Description("Minimum number of players required to keep SCPs as SCPs.")]
+        public int MinPlayersForSCP { get; set; } = 4;
+
+        [Description("Role SCPs become when too few players are online.")]
+        public RoleTypeId LowPlayerRole { get; set; } = RoleTypeId.FacilityGuard;
+
+        [Description("Room where SCPs spawn when converted due to low player count.")]
+        public RoomType LowPlayerSpawnRoom { get; set; } = RoomType.LczToilets;
+
+        [Description("Offset applied to the low-player spawn position.")]
+        public Vector3 LowPlayerSpawnOffset { get; set; } = new Vector3(0, 1, 0);
+
+        [Description("Broadcast shown when SCPs are converted to Overwatch.")]
+        public string OverwatchBroadcast { get; set; } =
+            "<size=40><color=blue>You was put in Overwatch !</color></size>\n" +
+            "<size=30>Please wait for a human to uncontain you...\nTapez <b>.overwatchexit</b> for left Overwatch</size>";
+
+        [Description("Duration of the Overwatch broadcast.")]
+        public ushort OverwatchBroadcastDuration { get; set; } = 10;
     }
 
 
