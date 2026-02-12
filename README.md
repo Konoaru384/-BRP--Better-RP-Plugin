@@ -3,10 +3,10 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/downloads/Konoaru384/BRP--Better-RP-Plugin/total?color=0af&label=Downloads" />
-  <img src="https://img.shields.io/github/v/release/Konoaru384/BRP--Better-RP-Plugin?label=Latest%20Release" />
-  <img src="https://img.shields.io/github/stars/Konoaru384/BRP--Better-RP-Plugin?label=Stars&color=yellow" />
-  <img src="https://img.shields.io/github/repo-size/Konoaru384/BRP--Better-RP-Plugin?label=Repository%20Size" />
+  <img src="https://img.shields.io/github/downloads/Konoaru384/-BRP--Better-RP-Plugin/total?color=0af&label=Downloads" />
+  <img src="https://img.shields.io/github/v/release/Konoaru384/-BRP--Better-RP-Plugin?label=Latest%20Release" />
+  <img src="https://img.shields.io/github/stars/Konoaru384/-BRP--Better-RP-Plugin?label=Stars&color=yellow" />
+  <img src="https://img.shields.io/github/repo-size/Konoaru384/-BRP--Better-RP-Plugin?label=Repository%20Size" />
 </p>
 
 <p align="center">
